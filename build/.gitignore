@@ -1,0 +1,7 @@
+/depend.mak
+/*.o
+/message_tests
+/io_tests
+/server
+/updater
+/display

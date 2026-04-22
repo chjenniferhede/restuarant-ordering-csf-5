@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>601.229 (S26): Assignment 5: Restaurant Order System</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="601.229%20(S26)_%20Assignment%205_%20Restaurant%20Order%20System_files/csf.css">
+  <link rel="stylesheet" type="text/css" href="601.229%20(S26)_%20Assignment%205_%20Restaurant%20Order%20System_files/syntax.css">
+  <link rel="shortcut icon" href="https://jhucsf.github.io/spring2026/img/favicon.png">
+  <script type="text/javascript" src="601.229%20(S26)_%20Assignment%205_%20Restaurant%20Order%20System_files/csf.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+  <link href="601.229%20(S26)_%20Assignment%205_%20Restaurant%20Order%20System_files/css2_002.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+  <link href="601.229%20(S26)_%20Assignment%205_%20Restaurant%20Order%20System_files/css2.css" rel="stylesheet">
+<style>.village-iframe{width:100%;height:100%;border:none;display:block;position:fixed;top:0;left:0;z-index:2147483647;background:#0000003d;color-scheme:light}.village-iframe.village-loading{display:flex;justify-content:center;align-items:center}.village-iframe>.village-spinner{width:1.5rem;height:1.5rem;border:2px solid #000;border-left-color:transparent;border-bottom-color:transparent;border-radius:50%;animation:spin .45s linear infinite}.village-iframe.village-hidden{display:none}@keyframes spin{0%{transform:rotate(0)}to{transform:rotate(360deg)}}.village-hidden{display:none}[village-paths-data=facepiles]{display:flex;align-items:center;padding-right:.5rem}[village-paths-data=facepiles] img{width:1.5rem;height:1.5rem;border-radius:50%;margin-right:-.5rem}[village-paths-data=facepiles] img.village-facepiler-avatar-not-found{filter:blur(7px)}[village-paths-data=facepiles] img:last-child{margin-right:0}[village-paths-data=count]{padding-right:.25rem}[village-paths-availability=error],[village-paths-availability=found],[village-paths-availability=not-found],[village-paths-availability=not-activated]{display:none!important}[village-paths-availability=loading]{display:inline-flex!important}</style><script id="simplify-jobs-page-script" src="601.229%20(S26)_%20Assignment%205_%20Restaurant%20Order%20System_files/pageScript.bundle.js"></script></head>
+
+<body>
+  <div id="content">
+    <div id="navbar_container">
+      <ul id="navbar">
+        <li><span class="csf">CSF<br>@JHU</span></li>
+        <li id="navbar_home"><a href="https://jhucsf.github.io/spring2026/index.html">Home</a></li>
+        <li id="navbar_syllabus"><a href="https://jhucsf.github.io/spring2026/syllabus.html">Syllabus</a></li>
+        <li id="navbar_schedule"><a href="https://jhucsf.github.io/spring2026/schedule.html">Schedule</a></li>
+        <li id="navbar_assignments"><a href="https://jhucsf.github.io/spring2026/assignments.html">Assignments</a></li>
+        <li id="navbar_resources"><a href="https://jhucsf.github.io/spring2026/resources.html">Resources</a></li>
+      </ul>
+    </div>
+
+    <hr id="headerSep">
+
+    <div id="pageTitle">Assignment 5: Restaurant Order System</div>
+
+    <p><em>Note</em>: Assignment 5 is a double assignment. Each milestone (MS1 and MS2)
+is worth 1/6 of the assignments grade for the course, the same as
+(individually) Assignments 1–4.</p>
+
+<p><strong>Due:</strong></p>
+
+<ul>
+  <li>Milestone 1 due <strong>Mon Apr 20th</strong> by 11pm</li>
+  <li>Milestone 2 due <strong>Mon Apr 27th</strong> by 11pm (no late hours allowed)</li>
+</ul>
+
+<p>Note that you may <strong>not</strong> use late hours on Milestone 2.
+Please plan accordingly.</p>
+
+<!--
+<div class='admonition info'>
+  <div class='title'>Note</div>
+  <div class='content' markdown='1'>
+This is a preliminary assignment description. It has all of the information
+you will need to begin working on Milestone 1. We will be updating the assignment
+description with information you will need for Milestone 2, as well as
+more information about how you can test your code.
+  </div>
+</div>
+-->
+
+<p>Updates:</p>
+
+<p><em>4/14</em>: updated the <a href="#the-updater-client">Updater Client</a> and
+<a href="#the-display-client">Display Client</a> sections to clarify that</p>
+
+<ol>
+  <li>A <code class="language-plaintext highlighter-rouge">MessageType::ERROR</code> response to a login request should
+result in the client printing an error message to <code class="language-plaintext highlighter-rouge">std::cerr</code>
+and immediately exiting with a non-zero exit code</li>
+  <li>When the status of an order changes to <code class="language-plaintext highlighter-rouge">OrderStatus::DELIVERED</code>,
+it should be immediately removed from the display client’s
+collection of orders, before the display is refreshed</li>
+</ol>
+
+<p><em>4/15</em>: linked to a <a href="https://jh.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=42dc6767-076e-47a4-8bf0-b42d01350c73">screencast video</a> with some suggestions for running
+and testing the client and server programs.</p>
+
+<p><em>4/19</em>: added content to the <a href="#the-server">Server</a> section, and added
+<a href="#synchronization-of-shared-data">Synchronization of Shared Data</a>,
+<a href="#messagequeue-broadcasting-to-display-clients"><code class="language-plaintext highlighter-rouge">MessageQueue</code>, Broadcasting to Display Clients</a>,
+and <a href="#synchronization-report">Synchronization Report</a> sections.
+These changes include all of the information you should need to
+complete Milestone 2 of the assignment.</p>
+
+<p><em>4/20</em>: fixed to clarify that the <code class="language-plaintext highlighter-rouge">IO::send</code> and <code class="language-plaintext highlighter-rouge">IO::receive</code> functions
+are declared in <code class="language-plaintext highlighter-rouge">include/io.h</code>.</p>
+
+<h2 id="quick-guide">Quick Guide</h2>
+
+<p>Here are the high-level steps we recommend for completing the assignment.</p>
+
+<p>For Milestone 1:</p>
+
+<ol>
+  <li>Implement the <code class="language-plaintext highlighter-rouge">Wire::encode</code> and <code class="language-plaintext highlighter-rouge">Wire::decode</code> functions.
+Get all of the unit tests in the <code class="language-plaintext highlighter-rouge">message_tests</code> unit test program
+working. (See the <a href="#encoding">Encoding</a> section.)</li>
+  <li>Implement the <code class="language-plaintext highlighter-rouge">IO::send</code> and <code class="language-plaintext highlighter-rouge">IO::receive</code> functions.
+Get all of the unit tests in the <code class="language-plaintext highlighter-rouge">io_tests</code> test program
+working. (See the <a href="#framing">Framing</a> section.)</li>
+  <li>Implement the <code class="language-plaintext highlighter-rouge">updater</code> client and test it</li>
+  <li>Implement the <code class="language-plaintext highlighter-rouge">display</code> client and test it</li>
+</ol>
+
+<p>For Milestone 2:</p>
+
+<ol>
+  <li>Implement the <code class="language-plaintext highlighter-rouge">Server::server_loop</code> member function so that
+the server listens for TCP connections from clients. For each
+client that connects, create a <code class="language-plaintext highlighter-rouge">Client</code> object, and in a new
+detached thread, call its <code class="language-plaintext highlighter-rouge">chat</code> member function to communicate
+with the remote client.</li>
+  <li>Implement the <code class="language-plaintext highlighter-rouge">Client::chat</code> member function sufficiently that
+the client can log in. Test that you can log in successfully
+using the <code class="language-plaintext highlighter-rouge">nc</code> (netcat) program. You can also try using your
+client implementation or the reference client implementations,
+although they won’t work fully until you implement the server
+functionality.</li>
+  <li>Add functionality to the <code class="language-plaintext highlighter-rouge">Client</code> and <code class="language-plaintext highlighter-rouge">Server</code> classes to implement
+the required server functionality. You’ll need to add a central
+data structure to <code class="language-plaintext highlighter-rouge">Server</code> to keep track of orders, and use
+appropriate synchronization so that client threads can access the
+data concurrently.</li>
+  <li>Implement the protocol for communicating with an updater client.
+This will involve code in both <code class="language-plaintext highlighter-rouge">Server</code> and <code class="language-plaintext highlighter-rouge">Client</code>.</li>
+  <li>Implement the protocol for communicating with a display client.
+Each <code class="language-plaintext highlighter-rouge">Client</code> should have a <code class="language-plaintext highlighter-rouge">MessageQueue</code> object that the
+code in the <code class="language-plaintext highlighter-rouge">Server</code> object can use to post messages to be
+sent to the remote display client program which the state of
+any order or item changes. You’ll need to implement the
+<code class="language-plaintext highlighter-rouge">MessageQueue::enqueue</code> and <code class="language-plaintext highlighter-rouge">MessageQueue::dequeue</code> member
+functions.</li>
+</ol>
+
+<p>Milestone 2 tasks 3–5 will likely be the most challenging ones, although they
+should only involve a couple hundred lines of code, which should be
+fairly straightforward if you have thought about the problem and
+determined how to factor the problem into helper functions.</p>
+
+<div class="admonition caution">
+  <div class="title">This is Complicated, Help!</div>
+  <div class="content">
+    <p>Specifying the intended behavior of a networked application entails
+some complexity. This assignment description aims to document everything
+you need to know to implement the server and clients for the
+restaurant order system.</p>
+
+    <p>The good news is that the assignment skeleton file (see
+<a href="#getting-started">Getting Started</a>) includes reference executables
+for all three programs. You can use them as reference for how
+your programs should work. Also, you can use them to test your
+programs. For example, in Milestone 1, it will make sense to use
+the reference server implementation to test your client program
+implementations against.</p>
+
+    <p>Also, the two unit test programs should make it fairly straightforward
+to implement encoding, decoding, sending, and receiving of messages.
+Once that code works, implementing the actual application protocol
+is relatively easy, and fun!</p>
+  </div>
+</div>
+
+<h2 id="grading-criteria">Grading Criteria</h2>
+
+<p>Milestone 1:</p>
+
+<ul>
+  <li>message encoding/decoding: 10%</li>
+  <li>framing functions: 10%</li>
+  <li>updater client implementation: 12.5%</li>
+  <li>display client implementation: 12.5%</li>
+  <li>design and coding style: 5%</li>
+</ul>
+
+<p>Milestone 2:</p>
+
+<ul>
+  <li>server implementation: 37.5%</li>
+  <li>concurrency report: 7.5%</li>
+  <li>design and coding style (server): 5%</li>
+</ul>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<p>To get started, download <a href="https://jhucsf.github.io/spring2026/assign/csf_assign05.zip">csf_assign05.zip</a> and unzip it.</p>
+
+<p>In the extracted <code class="language-plaintext highlighter-rouge">csf_assign05</code> directory, the <code class="language-plaintext highlighter-rouge">include</code> directory has header
+files and the <code class="language-plaintext highlighter-rouge">src</code> directory has C++ source files. The <code class="language-plaintext highlighter-rouge">build</code> directory is
+where compiled object files and executable files will be generated.</p>
+
+<p>Generating header file dependencies (do this before compiling
+for the first time, or any time you add or change any <code class="language-plaintext highlighter-rouge">#include</code>
+directives):</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make depend
+</code></pre></div></div>
+
+<p>To compile all executables:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make <span class="nt">-j8</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">-j8</code> option tells <code class="language-plaintext highlighter-rouge">make</code> to use up to 8 processes to run commands,
+allowing you to take advantage of multiple CPU cores. You can adjust the
+number to adjust the degree of parallelism.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">ref</code> directory contains the <code class="language-plaintext highlighter-rouge">server</code>, <code class="language-plaintext highlighter-rouge">updater</code>, and <code class="language-plaintext highlighter-rouge">display</code>
+executables compiled from the reference solution. They demonstrate the
+expected functionality, and you can use them to test your clients and
+server. (I.e., you can use the reference server to test your clients,
+and the reference clients to test your server.)</p>
+
+<p>The following screencast video demonstrates running the programs,
+and how you can use the netcat program to emulate a client or server
+for testing purposes:</p>
+
+<blockquote>
+  <p><a href="https://jh.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=42dc6767-076e-47a4-8bf0-b42d01350c73">https://jh.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=42dc6767-076e-47a4-8bf0-b42d01350c73</a></p>
+</blockquote>
+
+<h2 id="overview">Overview</h2>
+
+<p>In this assignment, you will implement two network clients and a network server
+which together form a restaurant order system. The general idea is that
+this system could be used to keep track of current orders in a restaurant,
+encompassing point of sale (order entry), display (so the workers in the
+kitchen can see what needs to be prepared), and updating the status of
+orders (so that the back of house staff can see which items still need to
+be prepared, and deliver the food to the wait staff when the items are
+ready.)</p>
+
+<p>The server maintains a collection of <em>orders</em>. Each order is a collection
+of <em>items</em>. Full details about orders and items are given in the
+<a href="#object-model">Object Model</a> section.</p>
+
+<p>The <em>updater</em> client creates new orders and updates the status of existing
+items and orders. The <em>display</em> client shows the current state of all active
+orders and their constituent items.</p>
+
+<p>The clients and server communicate with each other by sending <em>messages</em>.
+Full details about messages, their encoding, and the general network protocol
+are given in the <a href="#protocol">Protocol</a> and <a href="#encoding">Encoding</a> sections.</p>
+
+<h2 id="restaurant-order-system">Restaurant Order System</h2>
+
+<p>This section documents the object model and network protocol to be implemented
+in the restaurant order system.</p>
+
+<h3 id="object-model">Object Model</h3>
+
+<p>The <em>object model</em> is the collection of data types representing orders, items,
+their statuses, and other important information. All of these types are
+declared in the <code class="language-plaintext highlighter-rouge">include/model.h</code> header file and defined
+in <code class="language-plaintext highlighter-rouge">src/model.cpp</code>.</p>
+
+<p><code class="language-plaintext highlighter-rouge">OrderStatus</code> is an enumeration type representing the status of an order. Its
+members are <code class="language-plaintext highlighter-rouge">OrderStatus::INVALID</code>, <code class="language-plaintext highlighter-rouge">OrderStatus::NEW</code>, <code class="language-plaintext highlighter-rouge">OrderStatus::IN_PROGRESS</code>,
+<code class="language-plaintext highlighter-rouge">OrderStatus::DONE</code>, and <code class="language-plaintext highlighter-rouge">OrderStatus::DELIVERED</code>. (Note that <code class="language-plaintext highlighter-rouge">OrderStatus::INVALID</code>
+is not a valid status, and is used only to represent the absence of a valid
+order status.)</p>
+
+<p><code class="language-plaintext highlighter-rouge">ItemStatus</code> is an enumeration type representing the status of an item within an
+order. Its members are <code class="language-plaintext highlighter-rouge">ItemStatus::INVALID</code>, <code class="language-plaintext highlighter-rouge">ItemStatus::NEW</code>, <code class="language-plaintext highlighter-rouge">ItemStatus::IN_PROGRESS</code>,
+and <code class="language-plaintext highlighter-rouge">ItemStatus::DONE</code>. (As with <code class="language-plaintext highlighter-rouge">OrderStatus</code>, the <code class="language-plaintext highlighter-rouge">ItemStatus::INVALID</code> member
+is not a valid status.)</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">Order</code> class represents an order and its constituent items. It has a unique
+integer identifier, and <code class="language-plaintext highlighter-rouge">OrderStatus</code> value, and a collection of item objects.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">Item</code> class represents an item within an order. It has an order id (which is
+the unique id of the order the item is part of), an integer item id (which is
+unique within the overall order), an <code class="language-plaintext highlighter-rouge">ItemStatus</code> value, a description string, and
+an integer quantity (which must be positive).</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">Order</code> and <code class="language-plaintext highlighter-rouge">Item</code> classes have a variety of accessor functions for inspecting
+and modifying their data.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">ClientMode</code> enumeration type has three members, <code class="language-plaintext highlighter-rouge">ClientMode::INVALID</code>,
+<code class="language-plaintext highlighter-rouge">ClientMode::UPDATER</code>, and <code class="language-plaintext highlighter-rouge">ClientMode::DISPLAY</code>. The last two are used to
+distinguish the two kinds of clients. When a client logs in, it includes the
+client mode it wants to use, depending on which kind of client it is.
+(The <code class="language-plaintext highlighter-rouge">ClientMode::INVALID</code> value doesn’t represent a valid client type,
+but it can be useful to indicate that the client mode is unknown.)</p>
+
+<h3 id="messages">Messages</h3>
+
+<p>A <em>message</em> is a bundle of information sent from client to server (a “request”)
+or from server to client (a “response”). The <code class="language-plaintext highlighter-rouge">Message</code> class, defined in
+<code class="language-plaintext highlighter-rouge">include/message.h</code>, represents one message.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">MessageType</code> enumeration defines the various types of messages. These will
+be described in more detail in the <a href="#protocol">Protocol</a> section.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">Message</code> class is designed to be able to represent any message.
+Each message type has a specific combination of data values it contains.
+So, the <code class="language-plaintext highlighter-rouge">Message</code> class’s fields and accessor functions represent the
+union of all data values a single message could contain.</p>
+
+<h3 id="protocol">Protocol</h3>
+
+<p>The following table summarizes the message types, which program sends
+messages of that type, and what information a message of that type will
+contain.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Message type</th>
+      <th>Sent by</th>
+      <th>Reeived by</th>
+      <th>Contained data values</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MessageType::LOGIN</code></td>
+      <td>updater or display</td>
+      <td>server</td>
+      <td>client mode, string</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MessageType::QUIT</code></td>
+      <td>updater</td>
+      <td>server</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MessageType::ORDER_NEW</code></td>
+      <td>updater</td>
+      <td>server</td>
+      <td>order</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MessageType::ITEM_UPDATE</code></td>
+      <td>updater</td>
+      <td>server</td>
+      <td>order id, item id, item status</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MessageType::ORDER_UPDATE</code></td>
+      <td>updater</td>
+      <td>server</td>
+      <td>order id, order status</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MessageType::OK</code></td>
+      <td>server</td>
+      <td>updater or display</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MessageType::ERROR</code></td>
+      <td>server</td>
+      <td>updater or display</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER</code></td>
+      <td>server</td>
+      <td>display</td>
+      <td>order</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MessageType::DISP_ITEM_UPDATE</code></td>
+      <td>server</td>
+      <td>display</td>
+      <td>order id, item id, item status</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER_UPDATE</code></td>
+      <td>server</td>
+      <td>display</td>
+      <td>order id, order status</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">MessageType::DISP_HEARTBEAT</code></td>
+      <td>server</td>
+      <td>display</td>
+      <td><em>none</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The protocols implemented by the updater client, display
+client, and server are described by the following state machines.
+In each state machine, the nodes (circles) represent states,
+and the transitions (arrows) represent events. Each transition
+involves either sending or receiving a message. The “Start”
+node represents the initial state, and the “Done” node indicates
+that the conversation has finished and the network connection
+will be terminated.</p>
+
+<p>Note that the edge labels in <span style="color: #800080;">purple</span>
+represent interactive commands that the user enters.</p>
+
+<p><strong>Updater state machine</strong>:</p>
+
+<p><a href="https://jhucsf.github.io/spring2026/assign/img/assign05/updater-sm.svg">
+  <img style="width: 48em;" alt="Updater state machine diagram" src="601.229%20(S26)_%20Assignment%205_%20Restaurant%20Order%20System_files/updater-sm.svg">
+</a></p>
+
+<p><strong>Display state machine</strong>:</p>
+
+<p><a style="margin-left: 6em;" href="https://jhucsf.github.io/spring2026/assign/img/assign05/display-sm.svg">
+  <img style="width: 36em;" alt="Display state machine diagram" src="601.229%20(S26)_%20Assignment%205_%20Restaurant%20Order%20System_files/display-sm.svg">
+</a></p>
+
+<p><strong>Server state machine</strong>:</p>
+
+<p><a href="https://jhucsf.github.io/spring2026/assign/img/assign05/server-sm.svg">
+  <img style="width: 48em;" alt="Server state machine diagram" src="601.229%20(S26)_%20Assignment%205_%20Restaurant%20Order%20System_files/server-sm.svg">
+</a></p>
+
+<p>The server state machine describes the protocol implementing a conversation
+between the server and one client.</p>
+
+<p>Note the following special cases in the server’s state machines (indicated with
+the *, †, and ‡ symbols in the state diagram):</p>
+
+<p>* When a new order is created and added to the collection, the server should
+enqueue a <code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER</code> message containing the order data to
+the message queues of each active display client.</p>
+
+<p>† When a <code class="language-plaintext highlighter-rouge">MessageType::ITEM_UPDATE</code> message is successfully processed, the server
+should enqueue a <code class="language-plaintext highlighter-rouge">MessageType::DISP_ITEM_UPDATE</code> message containing the item id
+and new item status to the message queues of each active display client. Also,
+if as a result of applying the item update, the order status transitions from
+<code class="language-plaintext highlighter-rouge">OrderStatus::NEW</code> to <code class="language-plaintext highlighter-rouge">OrderStatus::IN_PROGRESS</code>, or if the order status
+transitions from <code class="language-plaintext highlighter-rouge">OrderStatus::IN_PROGRESS</code> to <code class="language-plaintext highlighter-rouge">OrderStatus::DONE</code>, the server
+should enqueue a <code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER_UPDATE</code> message with the order id and
+new order status to the message queue of each active display client.</p>
+
+<p>‡ When a <code class="language-plaintext highlighter-rouge">MessageType::ORDER_UPDATE</code> message is successfully processed, the
+server should enqueue a <code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER_UPDATE</code> message with the
+order id and new order status to the message queue of each active display
+client.</p>
+
+<h3 id="encoding">Encoding</h3>
+
+<p>In order to be sent and received via a TCP connection, a message is represented
+as a string, i.e., a sequence of bytes. The <code class="language-plaintext highlighter-rouge">Wire::encode</code> and <code class="language-plaintext highlighter-rouge">Wire::decode</code>
+functions (declared in <code class="language-plaintext highlighter-rouge">include/wire.h</code> and defined in in <code class="language-plaintext highlighter-rouge">src/wire.cpp</code>)
+implement conversion of a <code class="language-plaintext highlighter-rouge">Message</code> object to and from a string representation.</p>
+
+<p>In the table of message types in the <a href="#protocol">Protocol</a> section, you
+will note that the last column is called “Contained data values”. The
+entries in this column describe the “payload” of the message. The string
+representation of a message consists of the message type, followed by the
+contained data values (in order), with all items separated by a single
+“<code class="language-plaintext highlighter-rouge">|</code>” character.</p>
+
+<p>A <code class="language-plaintext highlighter-rouge">MessageType</code> value can be converted to a string using the
+<code class="language-plaintext highlighter-rouge">Wire::message_type_to_str</code> function.</p>
+
+<p>Integer data values such as order id and item id are encoded as a sequence of
+base 10 digits. You can use the <code class="language-plaintext highlighter-rouge">std::to_string</code> function to do this conversion.</p>
+
+<p><code class="language-plaintext highlighter-rouge">OrderStatus</code> and <code class="language-plaintext highlighter-rouge">ItemStatus</code> values can be converted to a string using
+(respectively) the <code class="language-plaintext highlighter-rouge">Wire::order_status_to_str</code> and <code class="language-plaintext highlighter-rouge">Wire::item_status_to_str</code>
+functions.</p>
+
+<p><code class="language-plaintext highlighter-rouge">MessageType::ORDER_NEW</code> and <code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER</code> messages contain an
+<code class="language-plaintext highlighter-rouge">Order</code> as the payload value. An <code class="language-plaintext highlighter-rouge">Order</code> is converted to a string
+consisting of the order id, order status, and item list, separacter by comma
+(“<code class="language-plaintext highlighter-rouge">,</code>”) characters. The item list is a sequence of 1 or more items, separated
+by semicolon (“;”) characters. Each item is encoded as a string consisting of
+order id, item id, item status, description string, and integer quantity,
+each separated by colon (“<code class="language-plaintext highlighter-rouge">:</code>”) characters.</p>
+
+<p>Note that you may assume that the separator characters “<code class="language-plaintext highlighter-rouge">|</code>”, “<code class="language-plaintext highlighter-rouge">,</code>”, “<code class="language-plaintext highlighter-rouge">;</code>”, and
+“<code class="language-plaintext highlighter-rouge">:</code>” will never occur in a string value within an encoded message.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">message_tests</code> unit test program (<code class="language-plaintext highlighter-rouge">make build/message_tests</code>) has fairly
+comprehensive unit tests for message encoding and decoding. When you reach
+the point where all of the unit tests pass, you can have confidence that
+your implementations of <code class="language-plaintext highlighter-rouge">Wire::encode</code> and <code class="language-plaintext highlighter-rouge">Wire::decode</code> are working correctly.</p>
+
+<h3 id="framing">Framing</h3>
+
+<p>Framing is the problem of determining where transmitted messages begin and
+end. The framing format for messages in the restaurant order system consists
+of a four-digit length value, followed by an encoded message string, followed
+by a single newline (“<code class="language-plaintext highlighter-rouge">\n</code>”) character. The length value specifies the number
+of bytes comprised by the encoded message string and the newline. For example,
+to frame the encoded message <code class="language-plaintext highlighter-rouge">OK|successful login</code>, the length value would
+be <code class="language-plaintext highlighter-rouge">0020</code>, since the encoded message is 19 characters long, and the newline
+contributes one extra character, for a total length of 20.</p>
+
+<p>This framing scheme is an example of <em>run-length encoding</em>, which means that
+messages are preceded by the exact length of the message contents to follow,
+so that when receiving a message, the received can read the length (a known
+number of bytes), and then know exactly how many additional bytes to expect.
+Contrast this approach with a “terminating sentinel” style of framing, where
+the end of a message is indicated by a special sentinel character or character
+sequence.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">IO::send</code> and <code class="language-plaintext highlighter-rouge">IO::receive</code> functions (declared in <code class="language-plaintext highlighter-rouge">include/io.h</code>
+and defined in <code class="language-plaintext highlighter-rouge">src/io.cpp</code>) frame and unframe a string value (i.e., an
+encoded message). <code class="language-plaintext highlighter-rouge">IO::send</code> writes the framed string to a file descriptor
+(e.g., a TCP socket), and <code class="language-plaintext highlighter-rouge">IO::receive</code> reads a framed string from a
+file descriptor. Note that these functions should throw <code class="language-plaintext highlighter-rouge">IOException</code>
+if any I/O error or EOF occurs.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">io_tests</code> unit test program (<code class="language-plaintext highlighter-rouge">make io_tests</code>) tests the implementation
+of <code class="language-plaintext highlighter-rouge">IO::send</code> and <code class="language-plaintext highlighter-rouge">IO::receive</code>. Once these tests pass, you can be
+reasonably confident that your implementations of <code class="language-plaintext highlighter-rouge">IO::send</code> and <code class="language-plaintext highlighter-rouge">IO::receive</code>
+are working well.</p>
+
+<h3 id="sending-and-receiving-messages">Sending and Receiving Messages</h3>
+
+<p>Once you have the encoding and framing functions working, it is very
+easy to send and receive messages.</p>
+
+<p>Let’s say that a <code class="language-plaintext highlighter-rouge">Message</code> object <code class="language-plaintext highlighter-rouge">m</code> represents a message you want to send,
+and that <code class="language-plaintext highlighter-rouge">fd</code> is the file descriptor of the TCP socket connecting to the
+remote peer application.  You can do so with the code</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span><span class="p">;</span>
+<span class="n">Wire</span><span class="o">::</span><span class="n">encode</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="p">);</span>
+<span class="n">IO</span><span class="o">::</span><span class="n">send</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">fd</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Similarly, if you want to receive a message from the remote peer, the code
+would be something like</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Message</span> <span class="n">m</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span><span class="p">;</span>
+<span class="n">IO</span><span class="o">::</span><span class="n">receive</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">s</span><span class="p">);</span>
+<span class="n">Wire</span><span class="o">::</span><span class="n">decode</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">m</span><span class="p">);</span>
+<span class="c1">// m now contains the received message</span>
+</code></pre></div></div>
+
+<h2 id="implementation-details">Implementation details</h2>
+
+<p>This section has further information about implementing the clients and server.</p>
+
+<h3 id="shared-pointers">Shared Pointers</h3>
+
+<p>The model object classes (<code class="language-plaintext highlighter-rouge">Order</code>, <code class="language-plaintext highlighter-rouge">Item</code>, <code class="language-plaintext highlighter-rouge">Message</code>), and classes designed to be
+containers for model objects (e.g., <code class="language-plaintext highlighter-rouge">Message</code> and <code class="language-plaintext highlighter-rouge">MessageQueue</code>) consistently
+use <code class="language-plaintext highlighter-rouge">std::shared_ptr</code> to manage dynamically allocated objects. This approach
+has some important advantages:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">std::shared_ptr</code> uses reference counting, and deletes the managed object
+when the last pointer to it goes out of scope; this is a simple form
+of garbage collection, and ensures that allocated objects won’t be leaked</li>
+  <li>because objects managed by <code class="language-plaintext highlighter-rouge">std::shared_ptr</code> are dynamically allocated,
+they are safe to transfer from one thread to another</li>
+</ul>
+
+<p>If you want to create an object to be managed by <code class="language-plaintext highlighter-rouge">std::shared_ptr</code>, don’t use
+the <code class="language-plaintext highlighter-rouge">new</code> operator, use the <code class="language-plaintext highlighter-rouge">std::make_shared</code> function. Its syntax is</p>
+
+<div class="highlighter-rouge"><pre>std::make_shared&lt;<i>ClassName</i>&gt;(<i>ConstructorArgs</i>)
+</pre></div>
+
+<p>where <em>ClassName</em> is the name of the class you want the new managed object to be
+an instance of, and <em>ConstructorArgs</em> are any arguments you want to pass to the
+constructor of the new object. For example, if <code class="language-plaintext highlighter-rouge">order</code> is a <code class="language-plaintext highlighter-rouge">std::shared_ptr</code>
+managing an <code class="language-plaintext highlighter-rouge">Order</code> object, and you want to create a shared pointer to a new
+<code class="language-plaintext highlighter-rouge">Message</code> object that you can use to broadcast that order to display clients as
+a <code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER</code> message, you could use the code</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">auto</span> <span class="n">order_new_msg</span> <span class="o">=</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">Message</span><span class="o">&gt;</span><span class="p">(</span><span class="n">MessageType</span><span class="o">::</span><span class="n">DISP_ORDER</span><span class="p">,</span> <span class="n">order</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Note that shared pointers should be passed by value and returned by value
+if you need to pass them to or return them from functions.</p>
+
+<h3 id="the-updater-client">The Updater Client</h3>
+
+<p>The updater client encapsulates both point-of-sale functionality (e.g.,
+creating new orders) and back of house functionality (updating the status
+of items and orders.)</p>
+
+<p>The updater client is invoked as</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./build/updater HOSTNAME PORT
+</code></pre></div></div>
+
+<p>where <code class="language-plaintext highlighter-rouge">HOSTNAME</code> is the hostname or IP address the server is running on,
+and <code class="language-plaintext highlighter-rouge">PORT</code> is the TCP port number on which the server is listening for
+connections.</p>
+
+<p>When the updater client starts, it should prompt the user to enter a username
+and password using the prompt text “<code class="language-plaintext highlighter-rouge">username: </code>” and “<code class="language-plaintext highlighter-rouge">password: </code>”.
+(Note that there is a space after the colon in each prompt, and also that
+the program should not print a newline after the prompt.)</p>
+
+<p>The updater client should combine the entered username and password into a
+single credential string of the form “<code class="language-plaintext highlighter-rouge">username/password</code>”, and send it to the
+server as a <code class="language-plaintext highlighter-rouge">MessageType::LOGIN</code> message.  The server will respond with
+either a <code class="language-plaintext highlighter-rouge">MessageType::OK</code> or <code class="language-plaintext highlighter-rouge">MessageType::ERROR</code> message. If an ok response is
+received, the client continues to execute the command loop. Otherwise it prints an
+error message of the form</p>
+
+<div class="highlighter-rouge"><pre>Error: <i>error text</i>
+</pre></div>
+
+<p>to <code class="language-plaintext highlighter-rouge">std::cerr</code> where <em>error text</em> is the string payload of the <code class="language-plaintext highlighter-rouge">MessageType::ERROR</code>
+message received from the server, and immediately exit with a non-zero exit code.</p>
+
+<p>The command loop works as follows. The client prints the prompt “<code class="language-plaintext highlighter-rouge">&gt; </code>” and
+reads a line of text, which is the command name. Commands are handled as follows:</p>
+
+<p><code class="language-plaintext highlighter-rouge">quit</code>: The client sends a <code class="language-plaintext highlighter-rouge">MessageType::QUIT</code> message to the server and
+receives the server’s response. The server should send back a <code class="language-plaintext highlighter-rouge">MessageType::OK</code>
+message, and the client exits with an exit code of 0.</p>
+
+<p><code class="language-plaintext highlighter-rouge">order_new</code>: The client reads an integer number of items. Then, it reads
+exactly that many items. Each item is read by reading an integer item id,
+an item description string, and an integer quantity. The client then sends
+a <code class="language-plaintext highlighter-rouge">MessageType::ORDER_NEW</code> message containing an order with the specified
+items. The order id of the new order should be set to 1. The server will
+respond with a <code class="language-plaintext highlighter-rouge">MessageType::OK</code> message. The text in that message will
+have the form</p>
+
+<div class="highlighter-rouge"><pre><code>Created order id <i>OrderId</i></code>
+</pre></div>
+
+<p>where <em>OrderId</em> is the actual order id assigned to the order.</p>
+
+<p><code class="language-plaintext highlighter-rouge">item_update</code>: The client reads an order id, item id, and item status.
+It sends a <code class="language-plaintext highlighter-rouge">MessageType::ITEM_UPDATE</code> message with the information entered.
+The server responds with a <code class="language-plaintext highlighter-rouge">MessageType::OK</code> or <code class="language-plaintext highlighter-rouge">MessageType::ERROR</code> message.</p>
+
+<p><code class="language-plaintext highlighter-rouge">order_update</code>: The client reads an order id and an order status.
+It sense a <code class="language-plaintext highlighter-rouge">MessageType::ORDER_UPDATE</code> message with the information entered.
+The server responds with a <code class="language-plaintext highlighter-rouge">MessageType::OK</code> or <code class="language-plaintext highlighter-rouge">MessageType::ERROR</code> message.</p>
+
+<p>Note that when reading the additional values entered by the user
+for the <code class="language-plaintext highlighter-rouge">order_new</code>, <code class="language-plaintext highlighter-rouge">item_update</code>, and <code class="language-plaintext highlighter-rouge">order_update</code> commands, each value
+is read on a separate line, and the client should <em>not</em> print a prompt
+for any of the entered values. You should use <code class="language-plaintext highlighter-rouge">std::getline</code> to ensure that
+a complete line of text is read.</p>
+
+<p>Note that there is no requirement to do anything special to handle invalid
+commands or input values. When testing your updater client, the autograder will
+only provide well-formed input.</p>
+
+<p>For the <code class="language-plaintext highlighter-rouge">order_new</code>, <code class="language-plaintext highlighter-rouge">item_update</code>, and <code class="language-plaintext highlighter-rouge">order_update</code> commands, if the
+server responds with <code class="language-plaintext highlighter-rouge">MessageType::OK</code>, the client should print a success
+message to <code class="language-plaintext highlighter-rouge">std::cout</code> of the form</p>
+
+<div class="highlighter-rouge"><pre><code>Success: <i>text</i></code>
+</pre></div>
+
+<p>where <em>text</em> is the string payload of the received message. If the
+server responds with <code class="language-plaintext highlighter-rouge">MessageType::ERROR</code>, the client should print a failure
+message to <code class="language-plaintext highlighter-rouge">std::cout</code> of the form</p>
+
+<div class="highlighter-rouge"><pre><code>Failure: <i>text</i></code>
+</pre></div>
+
+<p>where <em>text</em> is the string payload of the received message.</p>
+
+<p>Note that for these commands (the commands other than <code class="language-plaintext highlighter-rouge">quit</code>) the
+command loop continues regardless of whether the response received
+was <code class="language-plaintext highlighter-rouge">MessageType::OK</code> or <code class="language-plaintext highlighter-rouge">MessageType::QUIT</code>.</p>
+
+<p>If any I/O errors occur, if any invalid or incorrectly-formed message data is
+received, or if the server does not correctly implement the protocol as described
+in the <a href="#protocol">Protocol</a> section, the client should print an error message
+of the form</p>
+
+<div class="highlighter-rouge"><pre><code>Error: <i>explanation</i></code>
+</pre></div>
+
+<p>to <code class="language-plaintext highlighter-rouge">std::cerr</code>, where <em>explanation</em> is any arbitrary text. In addition, if
+an error message is printed, the program should exit with a non-zero
+exit code to indicate failure.</p>
+
+<p>Here is a transcript showing a run of the updater client, with
+user input in <strong>bold</strong>:</p>
+
+<div class="highlighter-rouge"><pre>username: <b>alice</b>
+password: <b>foobar</b>
+&gt; <b>order_new</b>
+<b>2</b>
+<b>42</b>
+<b>Veggie burger</b>
+<b>1</b>
+<b>101</b>
+<b>Curly fries</b>
+<b>2</b>
+Success: Created order id 1000
+&gt; <b>item_update</b>
+<b>1000</b>
+<b>42</b>
+<b>IN_PROGRESS</b>
+Success: successful item update
+&gt; <b>item_update</b>
+<b>1000</b>
+<b>101</b>
+<b>IN_PROGRESS</b>
+Success: successful item update
+&gt; <b>item_update</b>
+<b>1000</b>
+<b>42</b>
+<b>DONE</b>
+Success: successful item update
+&gt; <b>order_new</b>
+<b>1</b>
+<b>67</b>
+<b>Chocolate shake</b>
+<b>1</b>
+Success: Created order id 1001
+&gt; <b>quit</b>
+</pre></div>
+
+<h3 id="the-display-client">The Display Client</h3>
+
+<p>The display client implements a basic information display showing the status
+of all orders currently in the system.</p>
+
+<p>It is invoked with the command</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>./build/display HOSTNAME PORT
+</code></pre></div></div>
+
+<p>where (as with the updater program) <code class="language-plaintext highlighter-rouge">HOSTNAME</code> is the hostname or IP address
+of the system where the server is running, and <code class="language-plaintext highlighter-rouge">PORT</code> is the TCP port the
+server is listening on.</p>
+
+<p>The display client will prompt the user for a username and password
+in exactly the same way as the updater client. A login failure should
+be handled the same way as the updater client.</p>
+
+<p>If the login is successful, the display client should clear the screen by
+printing the contents of the <code class="language-plaintext highlighter-rouge">CLEAR_SCREEN</code> string to <code class="language-plaintext highlighter-rouge">std::cout</code>. Note that
+you will need to flush the output buffer to make sure the contents of this
+string are sent right away, i.e.</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">CLEAR_SCREEN</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">flush</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>Once the server responds with the <code class="language-plaintext highlighter-rouge">MessageType::OK</code> response to the
+<code class="language-plaintext highlighter-rouge">MessageType::LOGIN</code> request, the display client should enter a loop
+where it receives messages from the server. These messages should be handled
+as follows:</p>
+
+<dl>
+  <dt><code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER</code></dt>
+  <dd>Add a new order to the collection of orders</dd>
+  <dt><code class="language-plaintext highlighter-rouge">MessageType::DISP_ITEM_UPDATE</code></dt>
+  <dd>Update the status of a specific item within one of the current orders</dd>
+  <dt><code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER_UPDATE</code></dt>
+  <dd>Update the status of a specific current order</dd>
+  <dt><code class="language-plaintext highlighter-rouge">MessageType::DISP_HEARTBEAT</code></dt>
+  <dd>Do nothing; these messages are sent by the server only to detect display clients no longer connected</dd>
+</dl>
+
+<p>For all received messages other than <code class="language-plaintext highlighter-rouge">MessageType::DISP_HEARTBEAT</code> messages,
+after processing the received message, the client should clear the screen,
+and then refresh the display by printing the information in all orders.
+The orders should be printed in increasing order by order id. (Hint: using a
+<code class="language-plaintext highlighter-rouge">std::map</code> to manage the collection of current orders will make this easy.)</p>
+
+<p>As a special case, if the display client receives a
+<code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER_UPDATE</code> message changing the status of an
+order to <code class="language-plaintext highlighter-rouge">OrderStatus::DELIVERED</code>, the order should be removed from
+the collection of orders before the display is refreshed.
+In other words, when the status of an order changes to delivered,
+it immediately disappears from the display.</p>
+
+<p>The format for printing each order is as follows.</p>
+
+<p>To begin printing an order, print (to <code class="language-plaintext highlighter-rouge">std::cout</code>) a line of the form</p>
+
+<div class="highlighter-rouge"><pre>Order <i>OrderId</i>: <i>OrderStatus</i>
+</pre></div>
+
+<p>where <em>OrderId</em> is the order id, and <em>OrderStatus</em> is the order status.</p>
+
+<p>Next, print each item, in the order in which the items appeared in the
+earlier <code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER</code> message which added the order to the
+display.</p>
+
+<p>Printing an item consists of two lines. The first line has the form</p>
+
+<div class="highlighter-rouge"><pre>  Item <i>ItemId</i>: <i>ItemStatus</i>
+</pre></div>
+
+<p>where <em>ItemId</em> is the item id, and <em>ItemStatus</em> is the item status,
+and the second line has the form</p>
+
+<div class="highlighter-rouge"><pre>    <i>ItemDescription</i>, Quantity <i>Qty</i>
+</pre></div>
+
+<p>where <em>ItemDescription</em> is the item description string, and
+<em>Qty</em> is the item quantity.</p>
+
+<p>Note that the first line of an item is preceded by two spaces,
+and the second line of an item is preceded by four spaces.</p>
+
+<p>Note that once the username and password have been entered, the display
+client does not read any further user input. You can terminate a display
+client by typing Control-C in the terminal it’s running in.</p>
+
+<p>Here is what the display client would show in the terminal after
+the updates sent in the example session in the
+<a href="#the-updater-client">Updater Client</a> section:</p>
+
+<div class="highlighter-rouge"><pre>Order 1000: IN_PROGRESS
+  Item 42: DONE
+    Veggie burger, Quantity 1
+  Item 101: IN_PROGRESS
+    Curly fries, Quantity 2
+Order 1001: NEW
+  Item 67: NEW
+    Chocolate shake, Quantity 1
+</pre></div>
+
+<h3 id="the-server">The Server</h3>
+
+<p>For each client that connects to the server, the server should follow
+the server protocol according to the state diagram shown in the
+<a href="#protocol">Protocol</a> section.</p>
+
+<p>You will need to implement the <code class="language-plaintext highlighter-rouge">Server::server_loop</code> member function
+so that it accepts TCP connections from clients, and for each one,
+starts a new thread to communicate with the client.  Note that this
+member function does not return. The only way to terminate the server
+process is to send it a signal such as <code class="language-plaintext highlighter-rouge">SIGTERM</code>.</p>
+
+<p>You should create a new instance of the <code class="language-plaintext highlighter-rouge">Client</code> class to manage
+the resources needed by a client thread. A pointer to the <code class="language-plaintext highlighter-rouge">Client</code> object
+should be passed to the new thread’s start function as its argument.</p>
+
+<p>The thread start function used to start new client threads should
+use <code class="language-plaintext highlighter-rouge">pthread_detach()</code> and <code class="language-plaintext highlighter-rouge">pthread_self()</code> to make the thread a detached
+thread, and then call the <code class="language-plaintext highlighter-rouge">Client::chat</code> member function of the thread’s
+<code class="language-plaintext highlighter-rouge">Client</code> object. The <code class="language-plaintext highlighter-rouge">chat</code> member function should read requests from
+the client and send responses. Note that if the <code class="language-plaintext highlighter-rouge">chat</code> member function
+throws an exception, you should ensure that the thread is terminated
+gracefully, and that all resources (such as the TCP connection) are
+cleaned up. Assuming that the <code class="language-plaintext highlighter-rouge">Client</code> class’s destructor does this cleanup,
+it should be sufficient to ensure that the <code class="language-plaintext highlighter-rouge">Client</code> object is deleted
+in order to ensure that resources are cleaned up.</p>
+
+<p>When communicating with an updater client, the basic idea is to handle
+<code class="language-plaintext highlighter-rouge">MessageType::ORDER_NEW</code>, <code class="language-plaintext highlighter-rouge">MessageType::ITEM_UPDATE</code>, and <code class="language-plaintext highlighter-rouge">MessageType::ORDER_UPDATE</code>
+messages by updating the <code class="language-plaintext highlighter-rouge">Server</code> object’s collection of <code class="language-plaintext highlighter-rouge">Order</code>s.
+Each time a new <code class="language-plaintext highlighter-rouge">Order</code> is created, a <code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER</code> message
+should be broadcast to all connected display clients. <code class="language-plaintext highlighter-rouge">MessageType::ITEM_UPDATE</code>
+and <code class="language-plaintext highlighter-rouge">MessageType::ORDER_UPDATE</code> messages should be handled by updating the
+appropriate <code class="language-plaintext highlighter-rouge">Item</code> or <code class="language-plaintext highlighter-rouge">Order</code>, and broadcasting a <code class="language-plaintext highlighter-rouge">MessageType::DISP_ITEM_UPDATE</code>
+or <code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER_UPDATE</code> message to active display clients.</p>
+
+<p>Note the following special cases:</p>
+
+<ol>
+  <li>When the client sends a <code class="language-plaintext highlighter-rouge">MessageType::ORDER_NEW</code> message, the order
+id should be set to 1. The server should assign a new, valid order id.
+The valid order ids start at 1000, and increase by 1 with each new
+order.</li>
+  <li>When the first <code class="language-plaintext highlighter-rouge">Item</code> in an <code class="language-plaintext highlighter-rouge">Order</code> changes status from
+<code class="language-plaintext highlighter-rouge">ItemStatus::NEW</code> to <code class="language-plaintext highlighter-rouge">ItemStatus::IN_PROGRESS</code>, its <code class="language-plaintext highlighter-rouge">Order</code> changes
+status from <code class="language-plaintext highlighter-rouge">OrderStatus::NEW</code> to <code class="language-plaintext highlighter-rouge">OrderStatus::IN_PROGRESS</code>.</li>
+  <li>When all of the <code class="language-plaintext highlighter-rouge">Item</code>s in an <code class="language-plaintext highlighter-rouge">Order</code> have the status <code class="language-plaintext highlighter-rouge">ItemStatus::DONE</code>,
+their <code class="language-plaintext highlighter-rouge">Order</code> should change status to <code class="language-plaintext highlighter-rouge">OrderStatus::DONE</code>.</li>
+  <li>When a <code class="language-plaintext highlighter-rouge">MessageType::ORDER_UPDATE</code> message changes the status of an
+<code class="language-plaintext highlighter-rouge">Order</code> to <code class="language-plaintext highlighter-rouge">OrderStatus::DELIVERED</code>, the <code class="language-plaintext highlighter-rouge">Order</code> should be removed
+from the server’s collection of orders.</li>
+</ol>
+
+<p>Note that cases 2 and 3 mean that the server should broadcast both a
+<code class="language-plaintext highlighter-rouge">MessageType::DISP_ITEM_UPDATE</code> message and a <code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER_UPDATE</code>
+message. They should be broadcast in that order (<code class="language-plaintext highlighter-rouge">MessageType::DISP_ITEM_UPDATE</code>
+first, <code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER_UPDATE</code> second.)</p>
+
+<p>Also note that for both items and orders, status updates must be applied
+in the correct sequence. Those sequences are as follows:</p>
+
+<ul>
+  <li>For <code class="language-plaintext highlighter-rouge">ItemStatus</code>, the sequence is <code class="language-plaintext highlighter-rouge">NEW</code>, <code class="language-plaintext highlighter-rouge">IN_PROGRESS</code>, <code class="language-plaintext highlighter-rouge">DONE</code></li>
+  <li>For <code class="language-plaintext highlighter-rouge">OrderStatus</code>, the sequence is <code class="language-plaintext highlighter-rouge">NEW</code>, <code class="language-plaintext highlighter-rouge">IN_PROGRESS</code>, <code class="language-plaintext highlighter-rouge">DONE</code>, <code class="language-plaintext highlighter-rouge">DELIVERED</code></li>
+</ul>
+
+<p>When an updater client request can’t be handled because the order or item
+it refers to doesn’t exist, or when an order or item status change isn’t
+valid, the server should send back a <code class="language-plaintext highlighter-rouge">MessageType::ERROR</code> response.
+We recommend using the <code class="language-plaintext highlighter-rouge">SemanticError</code> exception type to represent this
+situation.</p>
+
+<p>When communicating with a display client, the <code class="language-plaintext highlighter-rouge">Client</code> object should
+wait for a shared pointer to a <code class="language-plaintext highlighter-rouge">Message</code> object to be enqueued on the
+<code class="language-plaintext highlighter-rouge">Client</code> object’s <code class="language-plaintext highlighter-rouge">MessageQueue</code>. The idea is that when the server needs to
+broadcast display updates to all active display clients, it does so by
+enqueuing a <code class="language-plaintext highlighter-rouge">std::shared_ptr</code> to a <code class="language-plaintext highlighter-rouge">Message</code> to each display client’s
+<code class="language-plaintext highlighter-rouge">MessageQueue</code>. If a shared pointer to a valid <code class="language-plaintext highlighter-rouge">Message</code> object can be
+dequeued within 1 second, that <code class="language-plaintext highlighter-rouge">Message</code> should be sent to the remote
+display client over the TCP connection. If no valid <code class="language-plaintext highlighter-rouge">Message</code> is available
+within one second, a <code class="language-plaintext highlighter-rouge">MessageType::DISP_HEARTBEAT</code> message should be send
+over the TCP connection. See the <a href="#messagequeue-broadcasting-to-display-clients"><code class="language-plaintext highlighter-rouge">MessageQueue</code>, Broadcasting to Display
+Clients</a> for further
+details.</p>
+
+<p>Another case to be aware of for display clients is that when a display
+client connects to the server, it should be sent <code class="language-plaintext highlighter-rouge">MessageType::DISP_ORDER</code>
+messages for all current orders.</p>
+
+<p>For both updater and display clients, if there an <code class="language-plaintext highlighter-rouge">IOException</code> occurs
+when receiving or sending a message, the client thread should immediately
+cease communicating with the client, clean up resources, and terminate the
+thread.</p>
+
+<h3 id="synchronization-of-shared-data">Synchronization of Shared Data</h3>
+
+<p>The single <code class="language-plaintext highlighter-rouge">Server</code> object should maintain all of the data about <code class="language-plaintext highlighter-rouge">Orders</code>,
+<code class="language-plaintext highlighter-rouge">Items</code>, and their statuses. Each <code class="language-plaintext highlighter-rouge">Client</code> object as a pointer to the
+<code class="language-plaintext highlighter-rouge">Server</code> object. You should add fields and member functions to the <code class="language-plaintext highlighter-rouge">Server</code>
+class that the <code class="language-plaintext highlighter-rouge">Client</code> object can use to have the <code class="language-plaintext highlighter-rouge">Server</code> do operations on
+the order and item data. Also, the <code class="language-plaintext highlighter-rouge">Server</code> will need to be able to
+broadcast messages to active display clients, so you will need to implement
+a way for the <code class="language-plaintext highlighter-rouge">Server</code> instance to keep track of active display clients.</p>
+
+<p>You will need to synchonize access to any data visible to multiple threads.
+In general, a <code class="language-plaintext highlighter-rouge">pthread_mutex_t</code> is sufficient to control access to shared
+data in situations where the only concern is preventing race conditions,
+and none of the operations any thread will be performing will involve
+waiting for a condition to be true.</p>
+
+<h3 id="messagequeue-broadcasting-to-display-clients"><code class="language-plaintext highlighter-rouge">MessageQueue</code>, Broadcasting to Display Clients</h3>
+
+<p>As we’ve discussed in class, queues are a great way to implement a communication
+channel from one thread to another. The <code class="language-plaintext highlighter-rouge">MessageQueue</code> class is intended to allow
+the server to send (shared) pointers to <code class="language-plaintext highlighter-rouge">Message</code> objects to active display
+clients. <code class="language-plaintext highlighter-rouge">MessageQueue</code> is not intended to be a bounded queue, so there is
+no enforced limit on how many messages the server can add to a display client’s
+<code class="language-plaintext highlighter-rouge">MessageQueue</code>.</p>
+
+<p>You will need to implement a mechanism that allows the client thread invoking
+the <code class="language-plaintext highlighter-rouge">dequeue()</code> operation to remove message from the queue to wait until either</p>
+
+<ol>
+  <li>The queue contains at least one <code class="language-plaintext highlighter-rouge">Message</code>, or</li>
+  <li>The queue remains empty for one second</li>
+</ol>
+
+<p>We suggest using a <code class="language-plaintext highlighter-rouge">sem_t</code> (semaphore) object to keep track of how many messages
+have been added to the queue. Initially, the semaphmore count should be 0.
+The <code class="language-plaintext highlighter-rouge">enqueue()</code> operation should use <code class="language-plaintext highlighter-rouge">sem_post</code> to increment the semaphore,
+indicating that there is now one more message in the queue. The <code class="language-plaintext highlighter-rouge">dequeue()</code>
+member function can use <code class="language-plaintext highlighter-rouge">sem_timedwait</code> to wait for the queue to be nonempty.
+If you pass a <code class="language-plaintext highlighter-rouge">timespec_t</code> value to <code class="language-plaintext highlighter-rouge">sem_timedwait</code> set for one second in the
+future, <code class="language-plaintext highlighter-rouge">sem_timedwait</code> will return with an error if the semaphore count remains
+0 for one second. You can use the following code to initialize a <code class="language-plaintext highlighter-rouge">timespec_t</code>
+value for a time one second in the future:</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">timespec</span> <span class="n">ts</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">timespec_get</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ts</span><span class="p">,</span> <span class="n">TIME_UTC</span><span class="p">);</span>
+<span class="n">ts</span><span class="p">.</span><span class="n">tv_sec</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// wait for one second</span>
+</code></pre></div></div>
+
+<p>You can read more about <code class="language-plaintext highlighter-rouge">sem_timedwait</code> using the command <code class="language-plaintext highlighter-rouge">man sem_timedwait</code>.</p>
+
+<p>When the server needs to broadcast a message to all active display clients,
+it should iterate over the collection of active display clients, and use
+<code class="language-plaintext highlighter-rouge">MessageQueue::enqueue</code> to add a copy of the message to each display client’s
+message queue. Note that you can use <code class="language-plaintext highlighter-rouge">Message::duplicate</code> to return a shared
+pointer to an exact copy of a specified <code class="language-plaintext highlighter-rouge">Message</code>. Giving each display client
+thread a shared pointer to a distinct dynamically allocated <code class="language-plaintext highlighter-rouge">Message</code> object
+is a good idea; allowing threads to access the same object instance can lead
+to conflicts, so avoiding unnecessary sharing of objects is a good practice
+for multithreaded programming.</p>
+
+<h3 id="synchronization-report">Synchronization Report</h3>
+
+<p>In your <code class="language-plaintext highlighter-rouge">README.txt</code> for Milestone 2, you should write a brief report
+explaining how you used synchronization to ensure that your server has
+no race conditions or deadlocks. Your report should explicitly indicate
+what data is shared between threads, and how that data is synchronized.</p>
+
+<h3 id="exceptions-raii">Exceptions, RAII</h3>
+
+<p>We highly recommend using exceptions to deal with any exceptional circumstance
+that means that control cannot continue normally in the program.</p>
+
+<p>Some useful exception types are defined in <code class="language-plaintext highlighter-rouge">include/except.h</code>.</p>
+
+<p><code class="language-plaintext highlighter-rouge">Wire::decode</code>, <code class="language-plaintext highlighter-rouge">IO::send</code>, and <code class="language-plaintext highlighter-rouge">IO::receive</code> are required to throw
+<code class="language-plaintext highlighter-rouge">InvalidMessage</code> and <code class="language-plaintext highlighter-rouge">IOException</code> exceptions as appropriate. When any program
+(client or server) encounters an improperly-formed or improperly-framed
+message, or when an I/O error or EOF condition occurs when reading from
+or writing to a TCP socket, the program should immediately cease communication
+with the remote peer. By letting these exceptions propagate naturally,
+you should be handle them with a single high-level <code class="language-plaintext highlighter-rouge">try</code>/<code class="language-plaintext highlighter-rouge">catch</code> construct.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">ProtocolError</code> exception type is meant to represent a situation where
+a properly-formed message was received, but it violates the protocol as
+defined by the relevant state machine. When a remote peer violates the protocol,
+the program should immediately cease communication with the remote peer.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">SemanticError</code> exception type is intended to be used by the server for
+situations where a message was properly formed, and did not violate the
+protocol state machine, but the operation embodied by the message was
+not semantically correct. For example, an order cannot have its status changed
+unless its status is <code class="language-plaintext highlighter-rouge">OrderStatus::DONE</code>, and the only valid order update
+that can be requested by an updater client is to change the order status
+from <code class="language-plaintext highlighter-rouge">OrderStatus::DONE</code> to <code class="language-plaintext highlighter-rouge">OrderStatus::DELIVERED</code>. If a member function in
+the <code class="language-plaintext highlighter-rouge">Server</code> class detects that these rules have been violated, it can throw
+<code class="language-plaintext highlighter-rouge">SemanticError</code>. This is a useful exception type because it can be caught
+in order to detect that the operation requested by the client is invalid,
+and the server can send back a <code class="language-plaintext highlighter-rouge">MessageType::ERROR</code> message in response.</p>
+
+<p>“RAII” stands for “Resource Acquisition Is Initialization”, and is a C++
+philosophy that advocates using a scoped local object to ensure the
+release of a resource when it is no longer needed. Because destructors
+for local objects are called regardless of how control leaves a scope,
+they can ensure that a resource is cleaned up even an exception is thrown.
+In general, if your program uses exceptions, it should also use RAII
+consistently to clean up resources.</p>
+
+<p><a href="https://en.cppreference.com/w/cpp/memory/unique_ptr.html"><code class="language-plaintext highlighter-rouge">std::unique_ptr</code></a>
+is useful for implementing RAII for a dynamically allocated object. For example,
+in the server, you should pass a pointer to a dynamically allocated <code class="language-plaintext highlighter-rouge">Client</code>
+object to the thread start function of the thread tasked with communicating with
+a client, in order to give the thread the access to the resources it needs.
+A <code class="language-plaintext highlighter-rouge">std::unique_ptr</code> is a useful way to ensure that this object gets cleaned up
+before the thread exist. A mutex guard object implements RAII for a critical
+section, ensuring that the mutex is released. For the client programs, you
+might find it useful to use RAII to ensure that the client file descriptor
+gets closed before the program terminates.</p>
+
+<h2 id="submitting">Submitting</h2>
+
+<p>You can create a zipfile of your work by running the command</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make solution.zip
+</code></pre></div></div>
+
+<p>To submit, upload your <code class="language-plaintext highlighter-rouge">solution.zip</code> file to <strong>Assignment 5 MS1</strong>
+or <strong>Assignment 5 MS2</strong> on Gradescope, depending on which milestone
+you are submitting.</p>
+
+<p>Keep in mind that for Milestone 2, your <code class="language-plaintext highlighter-rouge">README.txt</code> should contain
+your synchronization report.</p>
+
+
+    <div id="footer"></div>
+
+    <script type="text/javascript">
+      document.addEventListener('DOMContentLoaded', function() {
+        csf.pageCategory = "";
+        csf.onLoad();
+      });
+    </script>
+  </div>
+
+
+
+</body></html>

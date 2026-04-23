@@ -2,7 +2,6 @@
 #include <iostream>
 #include <string>
 #include <stdexcept>
-#include <unistd.h>
 #include "csapp.h"
 #include "model.h"
 #include "message.h"
@@ -11,27 +10,9 @@
 #include "except.h"
 #include "util.h"
 #include "client_util.h"
+#include "fd_guard.h"
 
 namespace {
-
-// tie the lifetime of a file descriptor to an object
-class FdGuard {
-private:
-  int m_fd;
-
-public:
-  // explicit so that this constructor cannot be used for implicit conversions
-  explicit FdGuard(int fd)
-    : m_fd(fd) {
-  }
-
-  ~FdGuard() {
-    if (m_fd >= 0)
-      close(m_fd);
-  }
-};
-
-
 // helper functions for handling commands
 void print_result_response(const Message &response) {
   if (response.get_type() == MessageType::OK) {

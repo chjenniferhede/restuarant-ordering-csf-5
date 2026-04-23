@@ -171,9 +171,6 @@ std::shared_ptr<Order> decode_order(const std::string &s) {
     );
   }
 
-  if (order->get_num_items() <= 0)
-    throw InvalidMessage("order has no items");
-
   return order;
 }
 

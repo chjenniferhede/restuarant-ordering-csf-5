@@ -192,7 +192,7 @@ int main(int argc, char **argv) {
   } catch (Exception &e) {
     std::cerr << "Error: " << e.what() << "\n";
     return 1;
-  } catch (std::exception &ex) {
+  } catch (std::exception &e) {
     std::cerr << "Error: " << e.what() << "\n";
     return 1;
   }

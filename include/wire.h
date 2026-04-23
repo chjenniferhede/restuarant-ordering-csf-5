@@ -30,13 +30,13 @@ std::string order_status_to_str(OrderStatus order_status);
 OrderStatus str_to_order_status(const std::string &s);
 
 // Encode the data in a given Message object as a string.
-void encode(const Message &msg, std::string &s);
+void encode(const Message &msg, std::string &result_str);
 
 // Decode an encoded message from a string, using the decoded
 // data to populate the given Message object. Throws InvalidMessage
 // exception if the string does not contain a valid encoded
 // message.
-void decode(const std::string &s, Message &msg);
+void decode(const std::string &given_str, Message &msg);
 
 }
 

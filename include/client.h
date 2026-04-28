@@ -20,7 +20,14 @@ class Client {
 private:
   int m_fd; // socket file descriptor for communicating with client
   Server *m_server; // pointer to Server instance
-  // TODO: add additional fields if needed
+  ClientMode m_mode = ClientMode::INVALID; // the client mode of this client, set after login
+  MessageQueue m_queue; // message queue for this client, used to send messages to DISPLAY clients
+  bool m_running = true; 
+
+  // Helper
+  bool send_message(const Message &msg);
+  void display_loop();
+  void updater_loop();
 
   NO_VALUE_SEMANTICS(Client);
 

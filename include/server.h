@@ -29,6 +29,10 @@ public:
   void server_loop(const char *port);
 
   // TODO: additional public member functions
+  void register_display(Client *client);
+  void unregister_display(Client *client);
+
+  int process_new_order(const Order &order);
 
 private:
   // TODO: private member functions

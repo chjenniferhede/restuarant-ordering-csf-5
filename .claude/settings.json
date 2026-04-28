@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make depend *)",
+      "Bash(make -j8 build/message_tests build/io_tests build/updater build/display)"
+    ]
+  }
+}

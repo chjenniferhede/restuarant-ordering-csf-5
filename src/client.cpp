@@ -1,7 +1,5 @@
-#include <iostream>
 #include <cassert>
 #include <unistd.h>
-
 #include "message.h"
 #include "wire.h"
 #include "io.h"
@@ -9,201 +7,147 @@
 #include "server.h"
 #include "passwd_db.h"
 #include "client.h"
-#include "message.h"
 
 Client::Client(int fd, Server *server)
   : m_fd(fd)
   , m_server(server) {
-  // TODO: do any necessary initialization
 }
 
 Client::~Client() {
-  // TODO: do any necessary cleanup
+  // if m_fd is valid
+  if (m_fd >= 0)
+    close(m_fd);
 }
 
+// Helper to send a message, false on failure
 bool Client::send_message(const Message &msg) {
   std::string out;
-  Wire::encode(msg, out); // put message into str
+  Wire::encode(msg, out);
   try {
     IO::send(out, m_fd);
-    return true; 
-  } catch (const std::exception &e) {
-    std::cerr << "Error sending data to client: " << e.what() << std::endl;
-    return false; // indicate that sending failed
+    return true;
+  } catch (const std::exception &) {
+    return false;
   }
 }
 
-void Client::display_loop() { 
+// Helper to run the display loop
+void Client::display_loop() {
   m_server->register_display(this);
-  
-  while (m_running) { 
-    try { 
-      // Dequeue, wait for a message for 1 second
+
+  try {
+    while (m_running) {
       auto msg_ptr = m_queue.dequeue();
-      if (msg_ptr) { 
-        if (!send_message(*msg_ptr)) { m_running = false; break; }
-
-      // If we didn't get a message, check heartbeat
-      } else { 
-        Message heartbeat_msg(MessageType::DISP_HEARTBEAT);
-        if (!send_message(heartbeat_msg)) { m_running = false; break; }
+      if (msg_ptr) {
+        // send message, if fail, break
+        if (!send_message(*msg_ptr)) break;
+      } else {
+        // send heartbeat, if fail, break
+        if (!send_message(Message(MessageType::DISP_HEARTBEAT))) break;
       }
-
-    // if any above step failed, we assume client disconnected
-    } catch (const std::exception &e) {
-      std::cerr << "Error sending data to client: " << e.what() << std::endl;
-      m_running = false;
-      break;
-    } 
-  } // loop end
+    }
+  // catch all exceptions, do nothing since in all case we just unregister
+  } catch (...) {}
 
   m_server->unregister_display(this);
-  close(m_fd);
-} 
+}
 
+// Helper to run the updater loop
 void Client::updater_loop() {
-  while (m_running) { 
-    try { 
-      // receive a message from the client
+  while (m_running) {
+    try {
       std::string raw_msg;
       IO::receive(m_fd, raw_msg);
 
-      // decode the message
-      Message msg; 
+      Message msg;
       Wire::decode(raw_msg, msg);
 
-      // Process quit 
+      // QUIT
       if (msg.get_type() == MessageType::QUIT) {
-        Message resp(MessageType::OK, std::string("Client quitting"));
-        send_message(resp);
-        m_running = false;
-        break;
-      }
-      // Process new order
-      else if (msg.get_type() == MessageType::ORDER_NEW) { 
+        send_message(Message(MessageType::OK, "bye"));
+        return;
+      // ORDER_NEW
+      } else if (msg.get_type() == MessageType::ORDER_NEW) {
         if (!msg.has_order()) {
-          Message resp(MessageType::ERROR, std::string("New order message missing order"));
-          send_message(resp);
+          send_message(Message(MessageType::ERROR, "missing order"));
           continue;
-        } else { 
-          int id = m_server->process_new_order(msg.get_order());
-          Message resp(MessageType::OK, std::string("Created new order ") + std::to_string(id));
-          resp.set_order_id(id);
-          send_message(resp);
         }
-      }
-      // Process item update
-      else if (msg.get_type() == MessageType::ITEM_UPDATE) {
+        int id = m_server->process_new_order(msg.get_order());
+        send_message(Message(MessageType::OK, "Created order id " + std::to_string(id)));
+      // ITEM_UPDATE
+      } else if (msg.get_type() == MessageType::ITEM_UPDATE) {
         if (!msg.has_order_id() || !msg.has_item_id() || !msg.has_item_status()) {
-          Message resp(MessageType::ERROR, std::string("Missing fields in item update message"));
-          send_message(resp);
+          send_message(Message(MessageType::ERROR, "missing item fields"));
           continue;
-        } else {
-          bool success = m_server->process_item_update(msg.get_order_id(), 
-                                                       msg.get_item_id(), 
-                                                       msg.get_item_status());
-          Message resp(success ? MessageType::OK : MessageType::ERROR, 
-                       success ? std::string("Item update successful") : std::string("Item update failed"));
-          send_message(resp);
         }
-      }
-      // Process order update
-      else if (msg.get_type() == MessageType::ORDER_UPDATE) {
+        try {
+          m_server->process_item_update(msg.get_order_id(), msg.get_item_id(), msg.get_item_status());
+          send_message(Message(MessageType::OK, "successful item update"));
+        } catch (const SemanticError &e) {
+          send_message(Message(MessageType::ERROR, e.what()));
+        }
+      // ORDER_UPDATE
+      } else if (msg.get_type() == MessageType::ORDER_UPDATE) {
         if (!msg.has_order_id() || !msg.has_order_status()) {
-          Message resp(MessageType::ERROR, std::string("Missing fields in order update message"));
-          send_message(resp);
+          send_message(Message(MessageType::ERROR, "missing order fields"));
           continue;
-        } else {
-          bool success = m_server->process_order_update(msg.get_order_id(), msg.get_order_status());
-          Message resp(success ? MessageType::OK : MessageType::ERROR, 
-                       success ? std::string("Order update successful") : std::string("Order update failed"));
-          send_message(resp);
         }
+        try {
+          m_server->process_order_update(msg.get_order_id(), msg.get_order_status());
+          send_message(Message(MessageType::OK, "successful order update"));
+        } catch (const SemanticError &e) {
+          send_message(Message(MessageType::ERROR, e.what()));
+        }
+      } else {
+        send_message(Message(MessageType::ERROR, "Updater: unexpected message type"));
       }
-      // Process unknown message type
-      else {
-        Message resp(MessageType::ERROR, std::string("Unknown message type"));
-        send_message(resp);
-        continue;
-      }
-    } catch (const std::exception &e) {
-      std::cerr << "Error processing message from client: " << e.what() << std::endl;
-      m_running = false;
-      break;
-    }
-  } // loop end
-
-  close(m_fd);
-}
     
-
-
+      // Loop will continue, so next m_running check will end the loop
+    } catch (const IOException &) {
+      m_running = false;
+    } catch (const InvalidMessage &) {
+      m_running = false;
+    }
+  }
+}
 
 void Client::chat() {
-  try { 
+  try {
+    std::string raw;
+    IO::receive(m_fd, raw);
 
-    // receive a message from the client
-    std::string login_raw_msg;
-    IO::receive(m_fd, login_raw_msg);
+    // Get login message
+    Message login_msg;
+    Wire::decode(raw, login_msg);
 
-    // decode the message
-    Message login_msg; 
-    Wire::decode(login_raw_msg, login_msg);
+    if (login_msg.get_type() != MessageType::LOGIN)
+      throw ProtocolError("expected LOGIN");
 
-    // check the message type, first must be LOGIN
-    if (login_msg.get_type() != MessageType::LOGIN) {
-      throw ProtocolError("Expected LOGIN message");
-    }
+    if (!login_msg.has_client_mode() || !login_msg.has_str())
+      throw ProtocolError("LOGIN missing fields");
 
-    if (!login_msg.has_client_mode() || !login_msg.has_str()) {
-      throw ProtocolError("LOGIN need client_mode and str");
-    }
-
-    // get the client mode and credential from the message
     ClientMode mode = login_msg.get_client_mode();
-    const std::string &credential = login_msg.get_str();
+    bool authenticated = PasswordDB::authenticate(login_msg.get_str());
 
-    // authenticate the client
-    bool authenticated = PasswordDB::authenticate(credential);
-
-    // Respond with an error message if authentication fails
-    if (!authenticated) { 
-      Message resp(MessageType::ERROR, std::string("Invalid credentials"));
-      std::string out; 
-      Wire::encode(resp, out);
-      IO::send(out, m_fd);
+    // If not authenticated, send error and return, end the connection
+    if (!authenticated) {
+      send_message(Message(MessageType::ERROR, "Invalid credentials"));
       return;
-      // return early
     }
 
-    // we know that it success 
-    Message resp(MessageType::OK, std::string("Login successful"));
-    std::string out;
-    Wire::encode(resp, out);
-    IO::send(out, m_fd);
-
-    // we can now store client info
+    // Send OK
+    send_message(Message(MessageType::OK, "Login successful"));
     m_mode = mode;
 
-    // --- DISPLAY --- //
+    // Enter corresponding loop
     if (m_mode == ClientMode::DISPLAY) {
       display_loop();
-      return;
     } else if (m_mode == ClientMode::UPDATER) {
       updater_loop();
-      return;
-    } else { 
-      throw ProtocolError("Invalid client mode");
+    } else {
+      throw ProtocolError("invalid client mode");
     }
-  } catch (const std::exception &e) {
-    std::cerr << "Error during client chat: " << e.what() << std::endl;
-  } catch (...) {
-    std::cerr << "Unknown error during client chat" << std::endl;
+  } catch (const std::exception &) {
+    return; // unrecoverable, end connection, trigger ~Client
   }
-
-  if (m_mode == ClientMode::DISPLAY) {
-    m_server->unregister_display(this);
-  }
-  close(m_fd);
-
 }

@@ -6,17 +6,15 @@
 #include <pthread.h>
 #include "util.h"
 #include "model.h"
+#include "message.h"
 
 // Forward declarations
 class Client;
-class Message;
 
 class Server {
 private:
-  // Private data
   // TODO: add fields
 
-  // no value semantics
   NO_VALUE_SEMANTICS(Server);
 
 public:
@@ -28,11 +26,15 @@ public:
   // not return.
   void server_loop(const char *port);
 
-  // TODO: additional public member functions
   void register_display(Client *client);
   void unregister_display(Client *client);
 
-  int process_new_order(const Order &order);
+  // Returns the server-assigned order id for the new order.
+  int process_new_order(std::shared_ptr<Order> order);
+
+  // Throws SemanticError if the update is invalid.
+  void process_item_update(int order_id, int item_id, ItemStatus item_status);
+  void process_order_update(int order_id, OrderStatus order_status);
 
 private:
   // TODO: private member functions

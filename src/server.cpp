@@ -55,6 +55,7 @@ void Server::server_loop(const char *port) {
 
     // try to accept a new client connection: accept is from sys/socket.h and take
     // accept(fd, addr, addrlen), return the file descriptor of the accepted connection
+    // remember that accept will wait, it is a blocking call
     int connfd = accept(server_fd, (struct sockaddr *)&client_addr, &client_len);
     if (connfd < 0){ 
       if (errno == EINTR) { // eintr 

@@ -1,12 +1,11 @@
 #include <cassert>
 #include <unistd.h>
 #include "message.h"
-#include "wire.h"
-#include "io.h"
 #include "except.h"
 #include "server.h"
 #include "passwd_db.h"
 #include "client.h"
+#include "client_util.h"
 
 Client::Client(int fd, Server *server)
   : m_fd(fd)
@@ -21,10 +20,8 @@ Client::~Client() {
 
 // Helper to send a message, false on failure
 bool Client::send_message(const Message &msg) {
-  std::string out;
-  Wire::encode(msg, out);
   try {
-    IO::send(out, m_fd);
+    ClientUtil::send_message(m_fd, msg);
     return true;
   } catch (const std::exception &) {
     return false;
@@ -56,11 +53,8 @@ void Client::display_loop() {
 void Client::updater_loop() {
   while (m_running) {
     try {
-      std::string raw_msg;
-      IO::receive(m_fd, raw_msg);
-
       Message msg;
-      Wire::decode(raw_msg, msg);
+      ClientUtil::receive_message(m_fd, msg);
 
       // QUIT
       if (msg.get_type() == MessageType::QUIT) {
@@ -113,12 +107,9 @@ void Client::updater_loop() {
 
 void Client::chat() {
   try {
-    std::string raw;
-    IO::receive(m_fd, raw);
-
     // Get login message
     Message login_msg;
-    Wire::decode(raw, login_msg);
+    ClientUtil::receive_message(m_fd, login_msg);
 
     if (login_msg.get_type() != MessageType::LOGIN)
       throw ProtocolError("expected LOGIN");

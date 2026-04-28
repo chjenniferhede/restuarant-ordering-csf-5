@@ -1,8 +1,10 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
+#include <memory>
 #include <pthread.h>
 #include "util.h"
 #include "model.h"
@@ -13,7 +15,12 @@ class Client;
 
 class Server {
 private:
-  // TODO: add fields
+  pthread_mutex_t m_mutex;
+  std::map<int, std::shared_ptr<Order>> m_orders;
+  std::unordered_set<Client *> m_display_clients;
+  int m_next_order_id = 1000;
+
+  void broadcast(std::shared_ptr<Message> msg);
 
   NO_VALUE_SEMANTICS(Server);
 
@@ -35,9 +42,6 @@ public:
   // Throws SemanticError if the update is invalid.
   void process_item_update(int order_id, int item_id, ItemStatus item_status);
   void process_order_update(int order_id, OrderStatus order_status);
-
-private:
-  // TODO: private member functions
 };
 
 #endif // SERVER_H

@@ -50,7 +50,7 @@ public:
   // is terminated nicely and resources are cleaned up.
   void chat();
 
-  // TODO: more public member functions
+  void enqueue(std::shared_ptr<Message> msg) { m_queue.enqueue(msg); }
 
 private:
   // TODO: private member functions

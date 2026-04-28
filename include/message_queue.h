@@ -13,7 +13,8 @@ class Message;
 class MessageQueue {
 private:
   std::deque<std::shared_ptr<Message>> m_queue;
-  // TODO: synchronization
+  pthread_mutex_t m_mutex;
+  sem_t m_avail;
 
   // No value semantics
   NO_VALUE_SEMANTICS(MessageQueue);

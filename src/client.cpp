@@ -1,11 +1,12 @@
 #include <cassert>
 #include <unistd.h>
 #include "message.h"
+#include "wire.h"
+#include "io.h"
 #include "except.h"
 #include "server.h"
 #include "passwd_db.h"
 #include "client.h"
-#include "client_util.h"
 
 Client::Client(int fd, Server *server)
   : m_fd(fd)
@@ -21,7 +22,9 @@ Client::~Client() {
 // Helper to send a message, false on failure
 bool Client::send_message(const Message &msg) {
   try {
-    ClientUtil::send_message(m_fd, msg);
+    std::string encoded;
+    Wire::encode(msg, encoded);
+    IO::send(encoded, m_fd);
     return true;
   } catch (const std::exception &) {
     return false;
@@ -54,7 +57,9 @@ void Client::updater_loop() {
   while (m_running) {
     try {
       Message msg;
-      ClientUtil::receive_message(m_fd, msg);
+      std::string raw;
+      IO::receive(m_fd, raw);
+      Wire::decode(raw, msg);
 
       // QUIT
       if (msg.get_type() == MessageType::QUIT) {
@@ -109,7 +114,9 @@ void Client::chat() {
   try {
     // Get login message
     Message login_msg;
-    ClientUtil::receive_message(m_fd, login_msg);
+    std::string raw;
+    IO::receive(m_fd, raw);
+    Wire::decode(raw, login_msg);
 
     if (login_msg.get_type() != MessageType::LOGIN)
       throw ProtocolError("expected LOGIN");

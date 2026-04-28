@@ -1,7 +1,7 @@
 
 Worked alone
 
-Synchronization report :
+Synchronization report
 
 Shared data and how we protect it:
 
